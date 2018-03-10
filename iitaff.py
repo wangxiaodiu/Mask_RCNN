@@ -53,8 +53,8 @@ class IITAFFConfig(Config):
     # Use small images for faster training. Set the limits of the small side
     # the large side, and that determines the image shape.
     # Please refer to 009: /home/niu/Liang_Niu/IIT_Affordances_2017/rgb(h).txt
-    IMAGE_MIN_DIM = 34
-    IMAGE_MAX_DIM = 2698
+    IMAGE_MIN_DIM = 512
+    IMAGE_MAX_DIM = 512
 
     # Use smaller anchors because our image and objects are small
     # RPN_ANCHOR_SCALES = (8, 16, 32, 64, 128)  # anchor side in pixels
