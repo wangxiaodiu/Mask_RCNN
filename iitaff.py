@@ -122,7 +122,7 @@ class IITAFFDataset(utils.Dataset):
             Like only take first 500 in val list as val, others will be added into train list.
             """
             train_val = []
-            train, val, test = []
+            train, val, test = [], [], []
             with open(dataset_dir+'/train_and_val.txt') as f:
                 train_val = [ line.rstrip('\n') for line in f]
             with open(dataset_dir+'/val.txt') as f:
@@ -146,13 +146,17 @@ class IITAFFDataset(utils.Dataset):
         for idx, rgb_name in enumerate(subset_dict[subset]):
             rgb_path = os.path.join(self.image_dir, rgb_name)
             img_id = idx+self.id_base
+            if idx%1000==0:
+                print(idx, "has been loaded.")
             # w, h = self.loadWH(rgb_path)
             self.add_image(
                 self.name, image_id=img_id,
                 path=rgb_path,
                 width=self.W,
                 height=self.H,
-                annotations=self.loadAnn(rgb_name))
+                # annotations=self.loadAnn(rgb_name),
+            )
+        print("Load IIT-AFF done.")
 
     def loadAnn(self, rgb_name): # TODO: is this one correct?
         '''
