@@ -92,7 +92,7 @@ class IITAFFDataset(utils.Dataset):
         self.W = 512
         self.H = 512
 
-    def load_iitaff( self, dataset_dir = '/home/niu/Liang_Niu/IIT_Affordances_2017', subset = 'train'):
+    def load_iitaff( self, dataset_dir = '/home/niu/Liang_Niu3/IIT_Affordances_2017', subset = 'train'):
         """ Load a subset of IIT AFF Dataset
         dataset_dir: The root directory of the IIT-AFF dataset.
         subset: What to load (train, val, train_val, test)
@@ -101,6 +101,8 @@ class IITAFFDataset(utils.Dataset):
         """
 
         assert subset in ('train', 'val', 'test')
+
+        print("Dataset_Dir:", dataset_dir)
 
         self.dataset_dir = dataset_dir
         self.image_dir = os.path.join(dataset_dir, 'rgb')
