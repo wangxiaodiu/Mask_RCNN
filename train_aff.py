@@ -141,7 +141,10 @@ if __name__ == '__main__':
 
     # Load weights
     print("Loading weights ", model_path)
-    model.load_weights(model_path, by_name=True)
+    # model.load_weights(model_path, by_name=True)
+    model.load_weights(model_path, by_name=True,
+                       exclude=["mrcnn_class_logits", "mrcnn_bbox_fc",
+                                "mrcnn_bbox", "mrcnn_mask"])
 
     # Train or evaluate
     if args.command == "train":
@@ -160,7 +163,8 @@ if __name__ == '__main__':
         print("Training network heads")
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE,
-                    epochs=40,
+                    # epochs=40,
+                    epochs=1,
                     layers='heads')
 
         # Training - Stage 2
@@ -168,7 +172,8 @@ if __name__ == '__main__':
         print("Fine tune Resnet stage 4 and up")
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE,
-                    epochs=120,
+                    # epochs=120,
+                    epochs=2,
                     layers='4+')
 
         # Training - Stage 3
@@ -176,7 +181,8 @@ if __name__ == '__main__':
         print("Fine tune all layers")
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE / 10,
-                    epochs=160,
+                    # epochs=160,
+                    epochs=2,
                     layers='all')
 
     elif args.command == "evaluate":

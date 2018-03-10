@@ -52,7 +52,6 @@ class IITAFFConfig(Config):
 
     # Use small images for faster training. Set the limits of the small side
     # the large side, and that determines the image shape.
-    # Please refer to 009: /home/niu/Liang_Niu/IIT_Affordances_2017/rgb(h).txt
     IMAGE_MIN_DIM = 512
     IMAGE_MAX_DIM = 512
 
