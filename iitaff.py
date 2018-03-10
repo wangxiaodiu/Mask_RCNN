@@ -17,6 +17,7 @@ import model as modellib
 import visualize
 from model import log
 from PIL import Image
+from scipy.ndimage.interpolation import zoom # as SCIPY_zoom
 
 
 # Root directory of the project
@@ -89,6 +90,8 @@ class IITAFFDataset(utils.Dataset):
     def __init__(self):
         super(IITAFFDataset, self).__init__()
         self.name = 'IITAFF'
+        self.W = 512
+        self.H = 512
 
     def load_iitaff( self, dataset_dir = '/home/niu/Liang_Niu/IIT_Affordances_2017', subset = 'train'):
         """ Load a subset of IIT AFF Dataset
@@ -142,12 +145,12 @@ class IITAFFDataset(utils.Dataset):
         for idx, rgb_name in enumerate(subset_dict[subset]):
             rgb_path = os.path.join(self.image_dir, rgb_name)
             img_id = idx+self.id_base
-            w, h = self.loadWH(rgb_path)
+            # w, h = self.loadWH(rgb_path)
             self.add_image(
                 self.name, image_id=img_id,
                 path=rgb_path,
-                width=w,
-                height=h,
+                width=self.W,
+                height=self.H,
                 annotations=self.loadAnn(rgb_name))
 
     def loadAnn(self, rgb_name): # TODO: is this one correct?
@@ -157,9 +160,13 @@ class IITAFFDataset(utils.Dataset):
         :return:
         '''
         assert type(rgb_name)==str
-        rgb2txt = lambda f: os.path.splitext(f)[0] + '.txt' # turn extension from jpg to txt
+        rgb2txt = lambda rgb: os.path.splitext(rgb)[0] + '.txt' # turn extension from jpg to txt
         aff_path = os.path.join(self.aff_dir, rgb2txt(rgb_name))
-        return np.loadtxt(aff_path, dtype=np.int32)
+        w, h = self.loadWH(os.path.join(self.image_dir, rgb_name))
+        ann = np.loadtxt(aff_path, dtype=np.int32)
+        # resize the annotation into a fixed resolution
+        w, h = float(w), float(h)
+        return zoom(ann, (self.W/w, self.H/h), order=0)
 
     def loadWH(self, rgb_path): # TODO: may become the bottleneck
         '''
