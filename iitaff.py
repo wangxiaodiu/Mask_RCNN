@@ -197,7 +197,8 @@ class IITAFFDataset(utils.Dataset):
             if n:
                 class_ids.append(n)
                 masks.append(ann==n)
-        return np.stack(masks, axis=2), class_ids
+        # TODO: fix bug if the masks are simply all zero.
+        return np.stack(masks, axis=2), np.array(class_ids)
 
 
     def load_mask(self, image_id):
@@ -213,7 +214,47 @@ class IITAFFDataset(utils.Dataset):
         class_ids: a 1D array of class IDs of the instance masks.
         """
         # separate annotation into [height, width, instance count].
-        assert type(image_id)==int, 'The parameter image_id my be int type.'
+        # assert type(image_id)==int, 'The parameter image_id must be int type.'
         rgb_name = self.id2name[image_id]
         return self.annToMask(self.loadAnn(rgb_name))
 
+    def random_image_ids(self, n=1):
+        '''
+        TODO: make it real random
+        Return n random images' ids.
+        :param n: how many image ids to return, default 1.
+        :return: a list of n image_ids.
+        '''
+        # return self.id_base + 42
+        # random.seed(42)
+        return random.choices(range(self.id_base, ))
+
+
+def evaluate_iitaff(model, dataset, config, do_visualize=False):
+    '''
+    Two steps.
+    :param model:
+    :param dataset:
+    :return:
+    '''
+
+    # First test on some random images
+    image_id = dataset.random_image_ids()[0]
+    original_image, image_meta, gt_class_id, gt_bbox, gt_mask = \
+        modellib.load_image_gt(dataset, config, image_id)
+    if do_visualize:
+        print("Ground Truth for this image:")
+        visualize.display_instances(original_image, gt_bbox, gt_mask, gt_class_id,
+                                    dataset.class_names, figsize=(8, 8))
+    result = model.detect([original_image], verbose=1)
+    r = result[0]
+    if do_visualize:
+        print("Predict Result for this image:")
+        visualize.display_instances(original_image, r['rois'], r['masks'], r['class_ids'],
+                                dataset.class_names, r['scores'], ax=get_ax())
+    else:
+        # TODO: save the predict result
+        pass
+
+    # Then, test on all images and calculate the score
+    pass

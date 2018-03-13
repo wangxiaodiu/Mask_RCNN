@@ -64,9 +64,8 @@ DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 
 
 ############################################################
-#  Training
+#  Training and Evaluation
 ############################################################
-
 
 if __name__ == '__main__':
     import argparse
@@ -187,12 +186,13 @@ if __name__ == '__main__':
 
     elif args.command == "evaluate":
         # Validation dataset
-        print("Evaluation not implemented yet.")
-        # dataset_val = IITAFFDataset()
-        # iitaff = dataset_val.load_iitaff(args.dataset, "test")
-        # dataset_val.prepare()
-        # print("Running COCO evaluation on {} images.".format(args.limit))
-        # evaluate_coco(model, dataset_val, iitaff, "bbox", limit=int(args.limit))
+        print("Run prediction on the test set of IIT-AFF:")
+        dataset_test = IITAFFDataset()
+        iitaff = dataset_test.load_iitaff(args.dataset, "test")
+        dataset_test.prepare()
+        print("Running evaluation on IITAFF test set.")
+        evaluate_iitaff(model, dataset_test, config, do_visualize=False)
     else:
         print("'{}' is not recognized. "
               "Use 'train' or 'evaluate'".format(args.command))
+
