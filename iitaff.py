@@ -121,8 +121,6 @@ class IITAFFDataset(utils.Dataset):
             TODO: Later we may want to divide the train_val in a defferent way.
             Like only take first 500 in val list as val, others will be added into train list.
             """
-            train_val = []
-            train, val, test = [], [], []
             with open(dataset_dir+'/train_and_val.txt') as f:
                 train_val = [ line.rstrip('\n') for line in f]
             with open(dataset_dir+'/val.txt') as f:
@@ -130,22 +128,18 @@ class IITAFFDataset(utils.Dataset):
             with open(dataset_dir+'/test.txt') as f:
                 test      = [ line.rstrip('\n') for line in f]
             train = list(set(train_val) - set(val))
-            # if shuffle:
-            # random.seed(42)
-            # random.shuffle(train)
-            # random.shuffle(val)
-            # random.shuffle(test)
             return train, val, test
         
         train_names, val_names, test_names = get_file_list()
-        self.id2name = train_names+val_names+test_names
+        self.allnames = train_names+val_names+test_names
         self.id_base = {'train':0, 'val':len(train_names), 'test':len(train_names)+len(val_names)}[subset]
         subset_dict = {'train':train_names, 'val':val_names, 'test':test_names}
+        self.id2name = subset_dict[subset]
 
         # Add images
         for idx, rgb_name in enumerate(subset_dict[subset]):
             rgb_path = os.path.join(self.image_dir, rgb_name)
-            img_id = idx+self.id_base
+            img_id = idx # + self.id_base
             if idx%1000==0:
                 print(idx, "has been loaded.")
             # w, h = self.loadWH(rgb_path)
@@ -154,7 +148,6 @@ class IITAFFDataset(utils.Dataset):
                 path=rgb_path,
                 width=self.W,
                 height=self.H,
-                # annotations=self.loadAnn(rgb_name),
             )
         print("Load IIT-AFF done.")
 
@@ -167,20 +160,21 @@ class IITAFFDataset(utils.Dataset):
         assert type(rgb_name)==str
         rgb2txt = lambda rgb: os.path.splitext(rgb)[0] + '.txt' # turn extension from jpg to txt
         aff_path = os.path.join(self.aff_dir, rgb2txt(rgb_name))
-        w, h = self.loadWH(os.path.join(self.image_dir, rgb_name))
+        # w, h = self.loadWH(os.path.join(self.image_dir, rgb_name))
         ann = np.loadtxt(aff_path, dtype=np.int32)
+        w, h = ann.shape
         # resize the annotation into a fixed resolution
         w, h = float(w), float(h)
         return zoom(ann, (self.W/w, self.H/h), order=0)
 
-    def loadWH(self, rgb_path): # TODO: may become the bottleneck
-        '''
-        Return the width and height of an rgb image according to its absolute path.
-        :param rgb_path:
-        :return:
-        '''
-        im = Image.open(rgb_path)
-        return im.size  # (width,height) tuple
+    # def loadWH(self, rgb_path): # TODO: may become the bottleneck
+    #     '''
+    #     Return the width and height of an rgb image according to its absolute path.
+    #     :param rgb_path:
+    #     :return:
+    #     '''
+    #     im = Image.open(rgb_path)
+    #     return im.size  # (width,height) tuple
 
     def annToMask(self, ann):
         '''

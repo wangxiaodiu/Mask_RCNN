@@ -90,10 +90,10 @@ if __name__ == '__main__':
                         default=DEFAULT_LOGS_DIR,
                         metavar="/path/to/logs/",
                         help='Logs and checkpoints directory (default=logs/)')
-    parser.add_argument('--limit', required=False,
-                        default=500,
-                        metavar="<image count>",
-                        help='Images to use for evaluation (default=500)')
+    # parser.add_argument('--limit', required=False,
+    #                     default=500,
+    #                     metavar="<image count>",
+    #                     help='Images to use for evaluation (default=500)')
     # parser.add_argument('--download', required=False,
     #                     default=False,
     #                     metavar="<True|False>",
