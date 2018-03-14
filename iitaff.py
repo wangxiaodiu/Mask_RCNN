@@ -131,15 +131,15 @@ class IITAFFDataset(utils.Dataset):
             return train, val, test
         
         train_names, val_names, test_names = get_file_list()
-        self.allnames = train_names+val_names+test_names
-        # self.id_base = {'train':0, 'val':len(train_names), 'test':len(train_names)+len(val_names)}[subset]
+        self.id2name = train_names+val_names+test_names
+        self.id_base = {'train':0, 'val':len(train_names), 'test':len(train_names)+len(val_names)}[subset]
         subset_dict = {'train':train_names, 'val':val_names, 'test':test_names}
-        self.id2name = subset_dict[subset]
+        self.length = len(subset_dict[subset])
 
         # Add images
         for idx, rgb_name in enumerate(subset_dict[subset]):
             rgb_path = os.path.join(self.image_dir, rgb_name)
-            img_id = idx # + self.id_base
+            img_id = idx + self.id_base
             if idx%1000==0:
                 print(idx, "has been loaded.")
             # w, h = self.loadWH(rgb_path)
@@ -149,7 +149,7 @@ class IITAFFDataset(utils.Dataset):
                 width=self.W,
                 height=self.H,
             )
-        print("Load IIT-AFF done.")
+        print("Load IIT-AFF done. All ", self.length, " images are loaded.")
 
     def loadAnn(self, rgb_name): # TODO: is this one correct?
         '''
@@ -219,9 +219,9 @@ class IITAFFDataset(utils.Dataset):
         :param n: how many image ids to return, default 1.
         :return: a list of n image_ids.
         '''
-        # return 42
+        # return self.id_base + 42
         random.seed(42)
-        return random.choices(range(len(self.id2name)), k=n)
+        return random.choices(range(self.id_base, self.id_base+self.length), k=n)
 
 
 def evaluate_iitaff(model, dataset, config, do_visualize=False):
