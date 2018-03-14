@@ -132,7 +132,7 @@ class IITAFFDataset(utils.Dataset):
         
         train_names, val_names, test_names = get_file_list()
         self.allnames = train_names+val_names+test_names
-        self.id_base = {'train':0, 'val':len(train_names), 'test':len(train_names)+len(val_names)}[subset]
+        # self.id_base = {'train':0, 'val':len(train_names), 'test':len(train_names)+len(val_names)}[subset]
         subset_dict = {'train':train_names, 'val':val_names, 'test':test_names}
         self.id2name = subset_dict[subset]
 
@@ -219,9 +219,9 @@ class IITAFFDataset(utils.Dataset):
         :param n: how many image ids to return, default 1.
         :return: a list of n image_ids.
         '''
-        # return self.id_base + 42
-        # random.seed(42)
-        return random.choices(range(self.id_base, ))
+        # return 42
+        random.seed(42)
+        return random.choices(range(len(self.id2name)), k=n)
 
 
 def evaluate_iitaff(model, dataset, config, do_visualize=False):
