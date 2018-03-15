@@ -67,7 +67,7 @@ class IITAFFConfig(Config):
 
     # use small validation steps since the epoch is small
     # VALIDATION_STEPS = 5
-    
+
 config = IITAFFConfig()
 config.display()
 
@@ -76,7 +76,7 @@ def get_ax(rows=1, cols=1, size=8):
     """Return a Matplotlib Axes array to be used in
     all visualizations in the notebook. Provide a
     central point to control graph sizes.
-    
+
     Change the default size attribute to control the size
     of rendered images
     """
@@ -107,12 +107,13 @@ class IITAFFDataset(utils.Dataset):
         self.dataset_dir = dataset_dir
         self.image_dir = os.path.join(dataset_dir, 'rgb')
         self.aff_dir = os.path.join(dataset_dir, 'affordances_labels')
-        class_names = ['background', 'contain', 'cut', 'display', 'engine',
+        # class_names = ['background', 'contain', 'cut', 'display', 'engine',
+        class_names = ['contain', 'cut', 'display', 'engine',
                        'grasp', 'hit', 'pound', 'support', 'w-grasp']
 
         # Add classes
         for id, name in enumerate(class_names):
-            self.add_class(self.name, id, name)
+            self.add_class(self.name, id+1, name)
 
         # Load all files into list
         def get_file_list():
@@ -129,7 +130,7 @@ class IITAFFDataset(utils.Dataset):
                 test      = [ line.rstrip('\n') for line in f]
             train = list(set(train_val) - set(val))
             return train, val, test
-        
+
         train_names, val_names, test_names = get_file_list()
         self.all_names = train_names + val_names + test_names
         self.id_base = {'train':0, 'val':len(train_names), 'test':len(train_names)+len(val_names)}[subset]
