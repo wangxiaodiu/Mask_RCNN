@@ -190,7 +190,7 @@ class IITAFFDataset(utils.Dataset):
         masks = []
         class_ids = []
         for n in ann_uni:
-            if n:
+            if n >=0:
                 class_ids.append(n)
                 masks.append(ann==n)
         # TODO: fix bug if the masks are simply all zero.
@@ -226,7 +226,7 @@ class IITAFFDataset(utils.Dataset):
         return random.choices(range(self.length), k=n)
 
 
-def evaluate_iitaff(model, dataset, config, do_visualize=False):
+def evaluate_iitaff(model, dataset, config, do_visualize=False, do_mAP=False):
     '''
     Two steps.
     :param model:
@@ -235,22 +235,43 @@ def evaluate_iitaff(model, dataset, config, do_visualize=False):
     '''
 
     # First test on some random images
-    image_id = dataset.random_image_ids()[0]
-    original_image, image_meta, gt_class_id, gt_bbox, gt_mask = \
-        modellib.load_image_gt(dataset, config, image_id)
-    if do_visualize:
-        print("Ground Truth for this image:")
-        visualize.display_instances(original_image, gt_bbox, gt_mask, gt_class_id,
-                                    dataset.class_names, figsize=(8, 8))
-    result = model.detect([original_image], verbose=1)
-    r = result[0]
-    if do_visualize:
-        print("Predict Result for this image:")
-        visualize.display_instances(original_image, r['rois'], r['masks'], r['class_ids'],
-                                dataset.class_names, r['scores'], ax=get_ax())
-    else:
-        # TODO: save the predict result
-        pass
+    image_ids = dataset.random_image_ids(5)
+    for image_id in image_ids:
+        original_image, image_meta, gt_class_id, gt_bbox, gt_mask = \
+            modellib.load_image_gt(dataset, config, image_id)
+        if do_visualize:
+            print("Ground Truth for this image:")
+            visualize.display_instances(original_image, gt_bbox, gt_mask, gt_class_id,
+                                        dataset.class_names, figsize=(8, 8))
+        else: # TODO
+            pass
+        result = model.detect([original_image], verbose=1)
+        r = result[0]
+        if do_visualize:
+            print("Predict Result for this image:")
+            visualize.display_instances(original_image, r['rois'], r['masks'], r['class_ids'],
+                                    dataset.class_names, r['scores'], ax=get_ax())
+        else:
+            # TODO: save the predict result
+            print("The no visualized part is not implemented yet.")
+            pass
 
     # Then, test on all images and calculate the score
-    pass
+    if do_mAP:
+        image_ids = dataset.image_ids
+        APs = []
+        for image_id in image_ids:
+            # Load image and ground truth data
+            image, image_meta, gt_class_id, gt_bbox, gt_mask = \
+                modellib.load_image_gt(dataset, config,
+                                       image_id, use_mini_mask=False)
+            molded_images = np.expand_dims(modellib.mold_image(image, config), 0)
+            # Run detection
+            results = model.detect([image], verbose=0)
+            r = results[0]
+            # Compute AP
+            AP, precisions, recalls, overlaps = \
+                utils.compute_ap(gt_bbox, gt_class_id, gt_mask,
+                                 r["rois"], r["class_ids"], r["scores"], r['masks'])
+            APs.append(AP)
+        print("mAP: ", np.mean(APs))
