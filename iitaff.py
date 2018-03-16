@@ -249,6 +249,22 @@ def evaluate_iitaff(model, dataset, config, do_visualize=False, do_mAP=False):
         r = result[0]
         if do_visualize:
             print("Predict Result for this image:")
+            def filter_result(r, threshold):
+                result = {
+                    "rois": [],
+                    "class_ids": [],
+                    "scores": [],
+                    "masks": [],
+                }
+                rois, masks, class_ids, scores = r['rois'], r['masks'], r['class_ids'], r['scores']
+                for i in range(len(rois)):
+                    if scores[i] >= threshold:
+                        result['rois'].append(rois[i])
+                        result['masks'].append([masks[i]])
+                        result['class_ids'].append(class_ids[i])
+                        result['scores'].append(scores[i])
+                return result
+            r = filter_result(r, threshold=0.45)
             visualize.display_instances(original_image, r['rois'], r['masks'], r['class_ids'],
                                     dataset.class_names, r['scores'], ax=get_ax())
         else:
@@ -259,7 +275,7 @@ def evaluate_iitaff(model, dataset, config, do_visualize=False, do_mAP=False):
     # Then, test on all images and calculate the score
     if do_mAP:
         print("Calculating mAP, it may take a few minutes.")
-        image_ids = dataset.image_ids
+        image_ids = dataset.image_ids[20]
         APs = []
         for idx, image_id in enumerate(image_ids):
             t = time.time()
@@ -278,4 +294,5 @@ def evaluate_iitaff(model, dataset, config, do_visualize=False, do_mAP=False):
                                  r["rois"], r["class_ids"], r["scores"], r['masks'])
             APs.append(AP)
             print("Time (seconds):", time.time()-t)
+        print("APs: ", APs)
         print("mAP: ", np.mean(APs))
