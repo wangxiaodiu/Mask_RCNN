@@ -258,9 +258,12 @@ def evaluate_iitaff(model, dataset, config, do_visualize=False, do_mAP=False):
 
     # Then, test on all images and calculate the score
     if do_mAP:
+        print("Calculating mAP, it may take a few minutes.")
         image_ids = dataset.image_ids
         APs = []
-        for image_id in image_ids:
+        for idx, image_id in enumerate(image_ids):
+            t = time.time()
+            print("Calculating", idx, '/', len(image_ids))
             # Load image and ground truth data
             image, image_meta, gt_class_id, gt_bbox, gt_mask = \
                 modellib.load_image_gt(dataset, config,
@@ -274,4 +277,5 @@ def evaluate_iitaff(model, dataset, config, do_visualize=False, do_mAP=False):
                 utils.compute_ap(gt_bbox, gt_class_id, gt_mask,
                                  r["rois"], r["class_ids"], r["scores"], r['masks'])
             APs.append(AP)
+            print("Time (seconds):", time.time()-t)
         print("mAP: ", np.mean(APs))
