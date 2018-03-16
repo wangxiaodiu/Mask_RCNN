@@ -263,6 +263,10 @@ def evaluate_iitaff(model, dataset, config, do_visualize=False, do_mAP=False):
                         result['masks'].append([masks[i]])
                         result['class_ids'].append(class_ids[i])
                         result['scores'].append(scores[i])
+                result['rois'] = np.array(result['rois'])
+                result['masks'] = np.array(result['masks'])
+                result['class_ids'] = np.array(result['class_ids'])
+                result['scores'] = np.array(result['scores'])
                 return result
             r = filter_result(r, threshold=0.45)
             visualize.display_instances(original_image, r['rois'], r['masks'], r['class_ids'],
