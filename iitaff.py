@@ -260,11 +260,11 @@ def evaluate_iitaff(model, dataset, config, do_visualize=False, do_mAP=False):
                 for i in range(len(rois)):
                     if scores[i] >= threshold:
                         result['rois'].append(rois[i])
-                        result['masks'].append([masks[i]])
+                        result['masks'].append([masks[:,:,i]])
                         result['class_ids'].append(class_ids[i])
                         result['scores'].append(scores[i])
                 result['rois'] = np.array(result['rois'])
-                result['masks'] = np.array(result['masks'])
+                result['masks'] = np.squeeze(np.stack(result['masks'], axis=3), axis=0)
                 result['class_ids'] = np.array(result['class_ids'])
                 result['scores'] = np.array(result['scores'])
                 return result
@@ -279,7 +279,7 @@ def evaluate_iitaff(model, dataset, config, do_visualize=False, do_mAP=False):
     # Then, test on all images and calculate the score
     if do_mAP:
         print("Calculating mAP, it may take a few minutes.")
-        image_ids = dataset.image_ids[20]
+        image_ids = dataset.image_ids[:20]
         APs = []
         for idx, image_id in enumerate(image_ids):
             t = time.time()
