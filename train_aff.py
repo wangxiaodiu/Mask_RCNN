@@ -140,10 +140,10 @@ if __name__ == '__main__':
 
     # Load weights
     print("Loading weights ", model_path)
-    # model.load_weights(model_path, by_name=True)
-    model.load_weights(model_path, by_name=True,
-                       exclude=["mrcnn_class_logits", "mrcnn_bbox_fc",
-                                "mrcnn_bbox", "mrcnn_mask"])
+    model.load_weights(model_path, by_name=True)
+    #  model.load_weights(model_path, by_name=True,
+                       #  exclude=["mrcnn_class_logits", "mrcnn_bbox_fc",
+                                #  "mrcnn_bbox", "mrcnn_mask"])
 
     # Train or evaluate
     if args.command == "train":
@@ -163,7 +163,7 @@ if __name__ == '__main__':
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE,
                     # epochs=40,
-                    epochs=1,
+                    epochs=20,
                     layers='heads')
 
         # Training - Stage 2
@@ -172,7 +172,7 @@ if __name__ == '__main__':
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE,
                     # epochs=120,
-                    epochs=2,
+                    epochs=60,
                     layers='4+')
 
         # Training - Stage 3
@@ -181,7 +181,7 @@ if __name__ == '__main__':
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE / 10,
                     # epochs=160,
-                    epochs=2,
+                    epochs=80,
                     layers='all')
 
     elif args.command == "evaluate":

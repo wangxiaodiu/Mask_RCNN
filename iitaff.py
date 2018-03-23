@@ -68,9 +68,6 @@ class IITAFFConfig(Config):
     # use small validation steps since the epoch is small
     # VALIDATION_STEPS = 5
 
-config = IITAFFConfig()
-config.display()
-
 ## -------------------------- Notebook Preferences ----------------------
 def get_ax(rows=1, cols=1, size=8):
     """Return a Matplotlib Axes array to be used in
@@ -235,7 +232,7 @@ def evaluate_iitaff(model, dataset, config, do_visualize=False, do_mAP=False):
     '''
 
     # First test on some random images
-    image_ids = dataset.random_image_ids(5)
+    image_ids = dataset.random_image_ids(10)
     for image_id in image_ids:
         original_image, image_meta, gt_class_id, gt_bbox, gt_mask = \
             modellib.load_image_gt(dataset, config, image_id)
@@ -263,14 +260,20 @@ def evaluate_iitaff(model, dataset, config, do_visualize=False, do_mAP=False):
                         result['masks'].append([masks[:,:,i]])
                         result['class_ids'].append(class_ids[i])
                         result['scores'].append(scores[i])
-                result['rois'] = np.array(result['rois'])
-                result['masks'] = np.squeeze(np.stack(result['masks'], axis=3), axis=0)
-                result['class_ids'] = np.array(result['class_ids'])
-                result['scores'] = np.array(result['scores'])
+                try:
+                    result['rois'] = np.array(result['rois'])
+                    result['masks'] = np.squeeze(np.stack(result['masks'], axis=3), axis=0)
+                    result['class_ids'] = np.array(result['class_ids'])
+                    result['scores'] = np.array(result['scores'])
+                except:
+                    return None
                 return result
-            r = filter_result(r, threshold=0.45)
-            visualize.display_instances(original_image, r['rois'], r['masks'], r['class_ids'],
+            r = filter_result(r, threshold=0.4)
+            if r:
+                visualize.display_instances(original_image, r['rois'], r['masks'], r['class_ids'],
                                     dataset.class_names, r['scores'], ax=get_ax())
+            else:
+                print("No masks has high enough confidence")
         else:
             # TODO: save the predict result
             print("The no visualized part is not implemented yet.")
@@ -279,7 +282,7 @@ def evaluate_iitaff(model, dataset, config, do_visualize=False, do_mAP=False):
     # Then, test on all images and calculate the score
     if do_mAP:
         print("Calculating mAP, it may take a few minutes.")
-        image_ids = dataset.image_ids[:20]
+        image_ids = dataset.image_ids[:100]
         APs = []
         for idx, image_id in enumerate(image_ids):
             t = time.time()
@@ -293,10 +296,17 @@ def evaluate_iitaff(model, dataset, config, do_visualize=False, do_mAP=False):
             results = model.detect([image], verbose=0)
             r = results[0]
             # Compute AP
-            AP, precisions, recalls, overlaps = \
-                utils.compute_ap(gt_bbox, gt_class_id, gt_mask,
-                                 r["rois"], r["class_ids"], r["scores"], r['masks'])
+            try:
+                AP, precisions, recalls, overlaps = \
+                    utils.compute_ap(gt_bbox, gt_class_id, gt_mask,
+                                     r["rois"], r["class_ids"], r["scores"], r['masks'])
+            except:
+                AP = 0
             APs.append(AP)
             print("Time (seconds):", time.time()-t)
         print("APs: ", APs)
         print("mAP: ", np.mean(APs))
+
+if __name__ == "__main__":
+    config = IITAFFConfig()
+    config.display()
